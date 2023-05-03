@@ -1,6 +1,6 @@
 ## Project Description
 
-This is a C project that includes multiple files and dependencies. This project implements the input, storage and output of graphs in various formats. Also it is check the graph connection.
+This is a C project that includes multiple files and dependencies. This project implements the input, storage and output of graphs in various formats. Also it is check the graph connection. Added func to separate some vertice.
 
 ## Dependencies
 
