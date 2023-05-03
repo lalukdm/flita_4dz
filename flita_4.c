@@ -2,9 +2,16 @@
 #include <stdlib.h>
 
 typedef struct {
+    char vert;
+    int degree;
+} vrt;
+
+
+typedef struct {
     int vertices, edges;
     int isConnected;
     char** matrix;
+    vrt* verts;
 } mtrx;
 
 void read_dim(int* vertices, int* edges) {
@@ -82,7 +89,7 @@ void DFS(int vertex, char** matrix, int* visited, int vertices) {
 }
 
 int isGraphConnected(mtrx* graph) {
-    int* visited = (int*)calloc(graph->vertices, sizeof(int));;
+    int* visited = (int*)calloc(graph->vertices, sizeof(int));
     
     DFS(0, graph->matrix, visited, graph->vertices);
     for (int i = 0; i < graph->vertices; ++i) {
@@ -95,7 +102,7 @@ int isGraphConnected(mtrx* graph) {
     return 1;
 }
 
-void separateVertice(int vert_number, mtrx *graph){
+void separateVertice(int vert_number, mtrx *graph) {
 
     for (int j = 0; j < (*graph).edges; j++) {
         if ((*graph).matrix[vert_number][j] != 0){
@@ -105,8 +112,35 @@ void separateVertice(int vert_number, mtrx *graph){
     }
 
     write_dot (graph);
+}
+
+void shellSort(mtrx *graph) {
+    for (int i = 0; i < graph->vertices; i++) {
+        int count = 0;
+        for (int j = 0; j < graph->edges; j++)
+            if ((*graph).matrix[i][j] != 0) count++;
+        
+        graph->verts[i].vert = i + 'a';
+        graph->verts[i].degree = count;
+    }
+
+
+    int gap = graph->vertices / 2;
+    while (gap > 0) {
+        for (int i = gap; i < graph->vertices; i++) {
+            vrt temp = graph->verts[i];
+            int j;
+            for (j = i; j >= gap && graph->verts[j - gap].degree < temp.degree; j -= gap) {
+                graph->verts[j] = graph->verts[j - gap];
+            }
+            graph->verts[j] = temp;
+        }
+        gap /= 2;
+    }
+
 
 }
+
 
 int main() {
 
@@ -119,6 +153,8 @@ int main() {
         graph.matrix[i] = (char*)malloc(sizeof(char) * graph.vertices);
     }
 
+    graph.verts = malloc(sizeof(vrt) * graph.vertices);
+
     read_matrix(&graph);
 
     graph.isConnected = isGraphConnected(&graph);
@@ -128,13 +164,20 @@ int main() {
     system("copy graph.dot C:\\Graphviz\\bin & cd C:\\Graphviz\\bin & dot.exe -Tpng graph.dot -o graph.png & move graph.png C:\\c4");
 
     int vert_number;
-    do {
-        puts("Enter vertice number to separate it\n>>");
-        scanf("%d", &vert_number);
-        separateVertice(vert_number, &graph);
-        system("copy graph.dot C:\\Graphviz\\bin & cd C:\\Graphviz\\bin & dot.exe -Tpng graph.dot -o graph.png & move graph.png C:\\c4");
 
-    } while (vert_number != -1);
+    puts("Enter vertice number to separate it (-1 to exit):");
+    scanf("%d", &vert_number);
+    while (vert_number != -1) {
+        separateVertice(vert_number, &graph);
+        scanf("%d", &vert_number);
+        system("copy graph.dot C:\\Graphviz\\bin & cd C:\\Graphviz\\bin & dot.exe -Tpng graph.dot -o graph.png & move graph.png C:\\c4");
+    }
+
+    shellSort(&graph);
+    
+    for (int i = 0; i < graph.vertices; i++) {
+        printf("%c: %d\n", graph.verts[i].vert, graph.verts[i].degree);
+    }
 
 
     return 0;
